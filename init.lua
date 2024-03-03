@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -160,6 +160,11 @@ vim.opt.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.opt.confirm = true
+-- Show vertical line at X characters
+vim.opt.colorcolumn = '120'
+
+-- Setting default tabstop to have it as a default for sleuth
+vim.opt.tabstop = 4
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
@@ -180,10 +185,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -240,6 +245,9 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'pocco81/auto-save.nvim', -- Autowrites buffers after certain actions
+  -- 'github/copilot.vim',
+  -- 'hrsh7th/cmp-nvim-lsp-signature-help', -- Show fn signatures as you type
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -425,7 +433,9 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>sf', function()
+        builtin.find_files { hidden = true }
+      end, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -754,7 +764,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, javascript = true, scss = true, css = true}
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -771,6 +781,7 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'eslint_d' },
       },
     },
   },
@@ -795,12 +806,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -811,12 +822,24 @@ require('lazy').setup({
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
       'hrsh7th/cmp-nvim-lsp-signature-help',
+
+      -- If you want to add a bunch of pre-configured snippets,
+      --    you can use this plugin to help you. It even has snippets
+      --    for various frameworks/libraries/etc. but you will have to
+      --    set up the ones that are useful for you.
+      'rafamadriz/friendly-snippets',
     },
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
+
+      require('luasnip.loaders.from_vscode').lazy_load {
+        incude = { 'javascript', 'typescript', 'typescriptreact', 'javascriptreact' },
+      }
+      require('luasnip').filetype_extend('typescript', { 'tsdoc' })
+      require('luasnip').filetype_extend('javascript', { 'jsdoc' })
 
       cmp.setup {
         snippet = {
@@ -884,6 +907,7 @@ require('lazy').setup({
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
             group_index = 0,
           },
+          { name = 'nvim_lsp_signature_help' },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
@@ -951,6 +975,25 @@ require('lazy').setup({
         return '%2l:%-2v'
       end
 
+      -- https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-map.md
+      -- local MiniMap = require 'mini.map'
+      -- MiniMap.setup {
+      --   integrations = {
+      --     MiniMap.gen_integration.builtin_search(),
+      --     MiniMap.gen_integration.gitsigns(),
+      --     MiniMap.gen_integration.diagnostic(),
+      --   },
+      -- }
+      -- vim.keymap.set('n', '<leader>Mc', MiniMap.close)
+      -- vim.keymap.set('n', '<leader>Mf', MiniMap.toggle_focus)
+      -- vim.keymap.set('n', '<leader>Mo', MiniMap.open)
+      -- vim.keymap.set('n', '<leader>Mr', MiniMap.refresh)
+      -- vim.keymap.set('n', '<leader>Ms', MiniMap.toggle_sidebar)
+      -- vim.keymap.set('n', '<leader>Mt', MiniMap.toggle)
+
+      require('mini.sessions').setup {
+        autoread = true,
+      }
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
@@ -1001,7 +1044,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
