@@ -227,6 +227,9 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  'pocco81/auto-save.nvim', -- Autowrites buffers after certain actions
+  -- 'github/copilot.vim',
+  -- 'hrsh7th/cmp-nvim-lsp-signature-help', -- Show fn signatures as you type
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -695,6 +698,13 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      'hrsh7th/cmp-nvim-lsp-signature-help',
+
+      -- If you want to add a bunch of pre-configured snippets,
+      --    you can use this plugin to help you. It even has snippets
+      --    for various frameworks/libraries/etc. but you will have to
+      --    set up the ones that are useful for you.
+      -- 'rafamadriz/friendly-snippets',
     },
     config = function()
       -- See `:help cmp`
@@ -768,6 +778,7 @@ require('lazy').setup({
             -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
             group_index = 0,
           },
+          { name = 'nvim_lsp_signature_help' },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
           { name = 'path' },
@@ -831,8 +842,22 @@ require('lazy').setup({
       end
 
       -- https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-map.md
-      require('mini.map').setup()
+      local MiniMap = require 'mini.map'
+      MiniMap.setup {
+        integrations = {
+          MiniMap.gen_integration.builtin_search(),
+          MiniMap.gen_integration.gitsigns(),
+          MiniMap.gen_integration.diagnostic(),
+        },
+      }
+      vim.keymap.set('n', '<leader>Mc', MiniMap.close)
+      vim.keymap.set('n', '<leader>Mf', MiniMap.toggle_focus)
+      vim.keymap.set('n', '<leader>Mo', MiniMap.open)
+      vim.keymap.set('n', '<leader>Mr', MiniMap.refresh)
+      vim.keymap.set('n', '<leader>Ms', MiniMap.toggle_side)
+      vim.keymap.set('n', '<leader>Mt', MiniMap.toggle)
 
+      require('mini.sessions').setup()
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
@@ -892,6 +917,45 @@ require('lazy').setup({
         '<cmd>MCstart<cr>',
         desc = 'Create a selection for selected text or word under the cursor',
       },
+    },
+  },
+
+  -- https://github.com/zbirenbaum/copilot.lua
+  {
+    'zbirenbaum/copilot.lua',
+    cmd = 'Copilot',
+    event = 'InsertEnter',
+    config = function()
+      require('copilot').setup {
+        suggestion = {
+          auto_trigger = true,
+          -- enabled = false
+        },
+        -- panel = { enabled = false },
+      }
+    end,
+  },
+
+  -- https://github.com/zbirenbaum/copilot-cmp
+  -- {
+  --   'zbirenbaum/copilot-cmp',
+  --   config = function()
+  --     require('copilot_cmp').setup()
+  --   end,
+  -- },
+
+  {
+    'f-person/auto-dark-mode.nvim',
+    opts = {
+      update_interval = 1000,
+      set_dark_mode = function()
+        vim.api.nvim_set_option('background', 'dark')
+        vim.cmd 'colorscheme gruvbox'
+      end,
+      set_light_mode = function()
+        vim.api.nvim_set_option('background', 'light')
+        vim.cmd 'colorscheme gruvbox'
+      end,
     },
   },
 
