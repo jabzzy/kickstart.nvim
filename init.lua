@@ -157,6 +157,9 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+-- Show vertical line at X characters
+vim.opt.colorcolumn = '120'
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -176,10 +179,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -732,12 +735,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -753,13 +756,19 @@ require('lazy').setup({
       --    you can use this plugin to help you. It even has snippets
       --    for various frameworks/libraries/etc. but you will have to
       --    set up the ones that are useful for you.
-      -- 'rafamadriz/friendly-snippets',
+      'rafamadriz/friendly-snippets',
     },
     config = function()
       -- See `:help cmp`
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
+
+      require('luasnip.loaders.from_vscode').lazy_load {
+        incude = { 'javascript', 'typescript', 'typescriptreact', 'javascriptreact' },
+      }
+      require('luasnip').filetype_extend('typescript', { 'tsdoc' })
+      require('luasnip').filetype_extend('javascript', { 'jsdoc' })
 
       cmp.setup {
         snippet = {
@@ -891,22 +900,24 @@ require('lazy').setup({
       end
 
       -- https://github.com/echasnovski/mini.nvim/blob/main/readmes/mini-map.md
-      local MiniMap = require 'mini.map'
-      MiniMap.setup {
-        integrations = {
-          MiniMap.gen_integration.builtin_search(),
-          MiniMap.gen_integration.gitsigns(),
-          MiniMap.gen_integration.diagnostic(),
-        },
-      }
-      vim.keymap.set('n', '<leader>Mc', MiniMap.close)
-      vim.keymap.set('n', '<leader>Mf', MiniMap.toggle_focus)
-      vim.keymap.set('n', '<leader>Mo', MiniMap.open)
-      vim.keymap.set('n', '<leader>Mr', MiniMap.refresh)
-      vim.keymap.set('n', '<leader>Ms', MiniMap.toggle_side)
-      vim.keymap.set('n', '<leader>Mt', MiniMap.toggle)
+      -- local MiniMap = require 'mini.map'
+      -- MiniMap.setup {
+      --   integrations = {
+      --     MiniMap.gen_integration.builtin_search(),
+      --     MiniMap.gen_integration.gitsigns(),
+      --     MiniMap.gen_integration.diagnostic(),
+      --   },
+      -- }
+      -- vim.keymap.set('n', '<leader>Mc', MiniMap.close)
+      -- vim.keymap.set('n', '<leader>Mf', MiniMap.toggle_focus)
+      -- vim.keymap.set('n', '<leader>Mo', MiniMap.open)
+      -- vim.keymap.set('n', '<leader>Mr', MiniMap.refresh)
+      -- vim.keymap.set('n', '<leader>Ms', MiniMap.toggle_sidebar)
+      -- vim.keymap.set('n', '<leader>Mt', MiniMap.toggle)
 
-      require('mini.sessions').setup()
+      require('mini.sessions').setup({
+        autoread = true,
+      })
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
