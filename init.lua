@@ -766,7 +766,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true, javascript = true, scss = true, css = true}
+        local disable_filetypes = { c = true, cpp = true, javascript = true, typescript = true, scss = true, css = true}
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -784,6 +784,8 @@ require('lazy').setup({
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
         javascript = { 'prettierd', 'eslint_d' },
+        typescript = { 'prettierd', 'eslint_d' },
+        typescriptreact = { 'prettierd', 'eslint_d' },
       },
     },
   },
