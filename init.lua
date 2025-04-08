@@ -180,7 +180,9 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
-vim.keymap.set('n', '<leader>cd', vim.diagnostic.open_float(0, { scope="line" }), { desc = 'Open [C]ode [D]iagnostic popup' })
+vim.keymap.set('n', '<leader>cd', function()
+  return vim.diagnostic.open_float { scope = 'line' }
+end, { desc = 'Open [C]ode [D]iagnostic popup' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -767,7 +769,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true, javascript = true, typescript = true, scss = true, css = true}
+        local disable_filetypes = { c = true, cpp = true, javascript = true, typescript = true, scss = true, css = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
